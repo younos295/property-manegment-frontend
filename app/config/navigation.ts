@@ -6,12 +6,13 @@ export const topHeaderNav = [
 ]
 
 export const sidebarNav = [
+  { label: 'Portfolios', to: '/portfolios', icon: 'i-heroicons-briefcase' },
   { label: 'Properties', to: '/properties', icon: 'i-heroicons-building-office' },
   { label: 'Tenants', to: '/tenants', icon: 'i-heroicons-users' },
   { label: 'Maintenance', to: '/maintenance', icon: 'i-heroicons-wrench-screwdriver' },
   { label: 'Payments', to: '/payments', icon: 'i-heroicons-banknotes' },
   { label: 'Reports', to: '/reports', icon: 'i-heroicons-chart-bar' },
-  { label: 'User Management', to: '/users', icon: 'i-heroicons-identification', roles: ['super_admin'] }
+  { label: 'User Management', to: '/users', icon: 'i-heroicons-identification', roles: ['super_admin'] },
 ]
 
 
