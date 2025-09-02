@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { useStorage } from '@vueuse/core';
 import { useUserStore } from './user';
 import { createApiClient, createProtectedApiClient } from '../utils/api';
 import { getCookie, hasCookie, logCookies } from '../utils/cookies';
@@ -89,9 +90,15 @@ export const useAuthStore = defineStore('auth', {
       this.clearError();
       
       try {
-        const response = await apiClient.post<any>('/auth/register', userData);
+        const response = await apiClient.post<any>('/auth/signup', userData);
         
         if (response) {
+          // Set flag to show onboarding wizard
+          if (process.client) {
+            const showWizard = useStorage('showOnboardingWizard', false);
+            showWizard.value = true;
+          }
+          
           // Handle different response structures
           let userDataFromResponse: any;
           if (response.data) {
