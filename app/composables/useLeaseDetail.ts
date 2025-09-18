@@ -1,4 +1,5 @@
 import { createProtectedApiClient } from '@/utils/api'
+import { h, resolveComponent } from 'vue'
 import { useApiToast } from '@/composables/useApiToast'
 
 export function useLeaseDetail(leaseId: number) {
@@ -58,9 +59,10 @@ export function useLeaseDetail(leaseId: number) {
         payments.value = Array.isArray(pData) ? pData : (Array.isArray(pData?.items) ? pData.items : [])
       } catch { payments.value = [] }
     } catch (e: any) {
-      toastError(e?.message || 'Failed to load lease')
+      const errorMessage = e?.data?.message || e?.message?.replace(/\[.*?\]\s*"[^"]*"/, '').trim() || 'Failed to load lease';
+      toastError(errorMessage);
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
@@ -75,9 +77,10 @@ export function useLeaseDetail(leaseId: number) {
       toastSuccess('Lease activated')
       await reload()
     } catch (e: any) {
-      toastError(e?.message || 'Activation failed')
+      const errorMessage = e?.data?.message || e?.message?.replace(/\[.*?\]\s*"[^"]*"/, '').trim() || 'Activation failed';
+      toastError(errorMessage);
     } finally {
-      activating.value = false
+      activating.value = false;
     }
   }
 
@@ -91,22 +94,39 @@ export function useLeaseDetail(leaseId: number) {
       toastSuccess('Lease ended')
       await reload()
     } catch (e: any) {
-      toastError(e?.message || 'Failed to end lease')
+      const errorMessage = e?.data?.message || e?.message?.replace(/\[.*?\]\s*"[^"]*"/, '').trim() || 'Failed to end lease';
+      toastError(errorMessage);
     } finally {
-      ending.value = false
+      ending.value = false;
     }
   }
 
   async function generateNextInvoice() {
+    console.log('Generating next invoice for lease', leaseId)
     if (!lease.value) return
     generatingInvoice.value = true
     try {
-      const res = await api.post(`/leases/${leaseId}/invoices/generate-next`, {})
-      const created = res?.data?.data ?? res?.data ?? res
-      toastSuccess('Next invoice generated')
-      return created // caller decides to navigate or refresh
+      // Make the API request using the existing API client
+      const response = await api.post(`/leases/${leaseId}/invoices/generate-next`, {})
+      
+      // Handle successful response
+      const responseData = response as any;
+      const created = responseData?.data?.data ?? responseData?.data ?? responseData;
+      toastSuccess('Next invoice generated');
+      return created; // caller decides to navigate or refresh
     } catch (e: any) {
-      toastError(e?.message || 'Failed to generate invoice')
+      console.error('Error generating invoice:', e);
+      
+      // Extract error message from the error object
+      const errorMessage = 
+        e?.response?.data?.message || 
+        e?.data?.message ||
+        e?.message || 
+        'Failed to generate invoice';
+      
+      console.log('Error message to display:', errorMessage);
+      toastError(String(errorMessage));
+      throw e; // Re-throw to allow caller to handle the error if needed
     } finally {
       generatingInvoice.value = false
     }
